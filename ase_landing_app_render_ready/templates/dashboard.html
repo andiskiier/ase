@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>DEN → ASE Probability Dashboard</title>
+  <style>
+    body { font-family: sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { padding: 10px; border: 1px solid #ccc; text-align: left; }
+    th { background-color: #f2f2f2; }
+    .low-probability { color: red; font-weight: bold; }
+    .high-probability { color: green; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h1>DEN → ASE Flights (Next 12 Hours)</h1>
+  <p>Live landing probability based on real-time weather conditions.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Flight</th>
+        <th>Departure Time</th>
+        <th>Landing Probability</th>
+        <th>Alternative Options</th>
+      </tr>
+    </thead>
+    <tbody id="flightTable"></tbody>
+  </table>
+
+  <script>
+    async function fetchFlightData() {
+      const res = await fetch('/data');
+      const flights = await res.json();
+      const tableBody = document.getElementById('flightTable');
+      tableBody.innerHTML = '';
+
+      flights.forEach(flight => {
+        const row = document.createElement('tr');
+        const probClass = flight.probability < 80 ? 'low-probability' : 'high-probability';
+        const altOptions = flight.probability < 80 ? `
+          <ul>
+            <li>🚗 Rent a 4WD car at DEN</li>
+            <li>🚌 Roaring Fork Express shuttle</li>
+            <li>✈️ Flight to Eagle County (EGE)</li>
+            <li>🛬 Alternate: GJT or COS</li>
+            <li>🕓 Drive to Aspen: ~3h 45m</li>
+          </ul>` : 'None needed';
+
+        row.innerHTML = `
+          <td>${flight.flight}</td>
+          <td>${flight.time}</td>
+          <td class="${probClass}">${flight.probability}%</td>
+          <td>${altOptions}</td>
+        `;
+
+        tableBody.appendChild(row);
+      });
+    }
+
+    window.onload = fetchFlightData;
+  </script>
+</body>
+</html>
